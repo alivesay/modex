@@ -7,10 +7,8 @@ import (
 )
 
 type Modex struct {
-	Running           bool
-	RebootRequested   bool
-	ShutdownRequested bool
-	Video             *gfx.Video
+	Video *gfx.Video
+	app   *core.Application
 }
 
 func NewModex() *Modex {
@@ -27,6 +25,7 @@ func NewModex() *Modex {
 		return nil
 	}
 
+	modex.app = core.GetInstanceApplication()
 	modex.Video = video
 
 	return modex
@@ -38,28 +37,32 @@ func (modex *Modex) Destroy() {
 }
 
 func (modex *Modex) Boot() {
-	modex.Running = true
+	modex.app.Running = true
+	core.Log(core.LOG_NOTICE, "Booting...")
 }
 
 func (modex *Modex) Run() {
-	modex.Update()
-	modex.Render()
+	for modex.app.ShutdownRequested {
+		if modex.app.Running {
+			modex.update()
+			modex.render()
+		}
+	}
 }
 
 func (modex *Modex) Pause() {
-	modex.Running = false
+	modex.app.Running = false
 }
 
 func (modex *Modex) Shutdown() {
-	modex.Running = false
-	// TODO: something
+	modex.app.Running = false
+	core.Log(core.LOG_NOTICE, "Shutting down...")
 }
 
-func (modex *Modex) Update() {
+func (modex *Modex) update() {
 	// initiate update cascade
 }
 
-func (modex *Modex) Render() {
-	modex.Video.RenderBegin()
-	modex.Video.RenderEnd()
+func (modex *Modex) render() {
+	modex.Video.Render()
 }

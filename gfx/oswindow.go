@@ -40,6 +40,9 @@ func (window *OSWindow) Destroy() {
 func (window *OSWindow) Swap() {
 	window.glfwWindow.SwapBuffers()
 	events.Poll()
+	if window.glfwWindow.ShouldClose() {
+		core.GetInstanceApplication().ShutdownRequested = true
+	}
 }
 
 func (window *OSWindow) keyCallback(glfwWindow *glfw.Window, key glfw.Key, scancode int, action glfw.Action, modifierKey glfw.ModifierKey) {
@@ -55,5 +58,5 @@ func (window *OSWindow) keyCallback(glfwWindow *glfw.Window, key glfw.Key, scanc
 }
 
 func DefaultKeyCallback(keyEvent *events.KeyEvent) {
-	core.Log(core.LOG_ERR, keyEvent)
+	core.Log(core.LOG_DEBUG, keyEvent)
 }

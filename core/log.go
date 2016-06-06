@@ -25,23 +25,25 @@ type log struct {
 	backend   logging.Backend
 }
 
-var instance *log
-var once sync.Once
+var logInstance *log
+var logOnce sync.Once
 
 func getInstanceLog() *log {
-	once.Do(func() {
-		instance = &log{
+	prefix := "MODEX "
+	logOnce.Do(func() {
+		logInstance = &log{
 			logger: logging.MustGetLogger("modex"),
 			formatter: logging.MustStringFormatter(
 				`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
 			),
-			backend: logging.NewLogBackend(os.Stderr, "", 0),
+			backend: logging.NewLogBackend(os.Stderr, prefix, 0),
 		}
 
-		logging.SetBackend(instance.backend)
-		logging.SetFormatter(instance.formatter)
+		logging.SetLevel(logging.DEBUG, prefix)
+		logging.SetBackend(logInstance.backend)
+		logging.SetFormatter(logInstance.formatter)
 	})
-	return instance
+	return logInstance
 }
 
 func Log(level LogErrorLevel, args ...interface{}) {

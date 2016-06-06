@@ -1,7 +1,9 @@
 package events
 
 import (
+	"fmt"
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"strings"
 )
 
 type Key int
@@ -10,8 +12,8 @@ const (
 	KeyUnknown      Key = Key(glfw.KeyUnknown)
 	KeySpace        Key = Key(glfw.KeySpace)
 	KeyApostrophe   Key = Key(glfw.KeyApostrophe)
-	KeyComman       Key = Key(glfw.KeyComma)
-	KeyMins         Key = Key(glfw.KeyMinus)
+	KeyComma        Key = Key(glfw.KeyComma)
+	KeyMinus        Key = Key(glfw.KeyMinus)
 	KeyPeriod       Key = Key(glfw.KeyPeriod)
 	KeySlash        Key = Key(glfw.KeySlash)
 	Key0            Key = Key(glfw.Key0)
@@ -131,6 +133,130 @@ const (
 	KeyLast         Key = Key(glfw.KeyLast)
 )
 
+var KeyNames = map[Key]string{
+	KeyUnknown:      `KeyUnknown`,
+	KeySpace:        `KeySpace`,
+	KeyApostrophe:   `KeyApostrophe`,
+	KeyComma:        `KeyComma`,
+	KeyMinus:        `KeyMinus`,
+	KeyPeriod:       `KeyPeriod`,
+	KeySlash:        `KeySlash`,
+	Key0:            `Key0`,
+	Key1:            `Key1`,
+	Key2:            `Key2`,
+	Key3:            `Key3`,
+	Key4:            `Key4`,
+	Key5:            `Key5`,
+	Key6:            `Key6`,
+	Key7:            `Key7`,
+	Key8:            `Key8`,
+	Key9:            `Key9`,
+	KeySemicolon:    `KeySemicolon`,
+	KeyEqual:        `KeyEqual`,
+	KeyA:            `KeyA`,
+	KeyB:            `KeyB`,
+	KeyC:            `KeyC`,
+	KeyD:            `KeyD`,
+	KeyE:            `KeyE`,
+	KeyF:            `KeyF`,
+	KeyG:            `KeyG`,
+	KeyH:            `KeyH`,
+	KeyI:            `KeyI`,
+	KeyJ:            `KeyJ`,
+	KeyK:            `KeyK`,
+	KeyL:            `KeyL`,
+	KeyM:            `KeyM`,
+	KeyN:            `KeyN`,
+	KeyO:            `KeyO`,
+	KeyP:            `KeyP`,
+	KeyQ:            `KeyQ`,
+	KeyR:            `KeyR`,
+	KeyS:            `KeyS`,
+	KeyT:            `KeyT`,
+	KeyU:            `KeyU`,
+	KeyV:            `KeyV`,
+	KeyW:            `KeyW`,
+	KeyX:            `KeyX`,
+	KeyY:            `KeyY`,
+	KeyZ:            `KeyZ`,
+	KeyLeftBracket:  `KeyLeftBracket`,
+	KeyBackslash:    `KeyBackslash`,
+	KeyRightBracket: `KeyRightBracket`,
+	KeyGraveAccent:  `KeyGraveAccent`,
+	KeyWorld1:       `KeyWorld1`,
+	KeyWorld2:       `KeyWorld2`,
+	KeyEscape:       `KeyEscape`,
+	KeyEnter:        `KeyEnter`,
+	KeyTab:          `KeyTab`,
+	KeyBackspace:    `KeyBackspace`,
+	KeyInsert:       `KeyInsert`,
+	KeyDelete:       `KeyDelete`,
+	KeyRight:        `KeyRight`,
+	KeyLeft:         `KeyLeft`,
+	KeyDown:         `KeyDown`,
+	KeyUp:           `KeyUp`,
+	KeyPageUp:       `KeyPageUp`,
+	KeyPageDown:     `KeyPageDown`,
+	KeyHome:         `KeyHome`,
+	KeyEnd:          `KeyEnd`,
+	KeyCapsLock:     `KeyCapsLock`,
+	KeyScrollLock:   `KeyScrolLock`,
+	KeyNumLock:      `KeyNumLock`,
+	KeyPrintScreen:  `KeyPrintScreen`,
+	KeyPause:        `KeyPause`,
+	KeyF1:           `KeyF1`,
+	KeyF2:           `KeyF2`,
+	KeyF3:           `KeyF3`,
+	KeyF4:           `KetF4`,
+	KeyF5:           `KeyF5`,
+	KeyF6:           `KeyF6`,
+	KeyF7:           `KeyF7`,
+	KeyF8:           `KeyF8`,
+	KeyF9:           `KeyF9`,
+	KeyF10:          `KeyF10`,
+	KeyF11:          `KeyF11`,
+	KeyF12:          `KeyF12`,
+	KeyF13:          `KeyF13`,
+	KeyF14:          `KeyF14`,
+	KeyF15:          `KeyF15`,
+	KeyF16:          `KeyF16`,
+	KeyF17:          `KeyF17`,
+	KeyF18:          `KeyF18`,
+	KeyF19:          `KeyF19`,
+	KeyF20:          `KeyF20`,
+	KeyF21:          `KeyF21`,
+	KeyF22:          `KeyF22`,
+	KeyF23:          `KeyF23`,
+	KeyF24:          `KeyF24`,
+	KeyF25:          `KeyF25`,
+	KeyKPO:          `KeyKPO`,
+	KeyKP1:          `KeyKP1`,
+	KeyKP2:          `KeyKP2`,
+	KeyKP3:          `KeyKP3`,
+	KeyKP4:          `KeyKP4`,
+	KeyKP5:          `KeyKP5`,
+	KeyKP6:          `KeyKP6`,
+	KeyKP7:          `KeyKP7`,
+	KeyKP8:          `KeyKP8`,
+	KeyKP9:          `KeyKP9`,
+	KeyKPDecimal:    `KeyKPDecimal`,
+	KeyKPDivide:     `KeyKPDivide`,
+	KeyKPMultiply:   `KeyKPMultiply`,
+	KeyKPSubtract:   `KeyKPSubtract`,
+	KeyKPAdd:        `KeyKPAdd`,
+	KeyKPEnter:      `KeyKPEnter`,
+	KeyKPEqual:      `KeyKPEqual`,
+	KeyLeftShift:    `KeyLeftShift`,
+	KeyLeftControl:  `KeyLeftControl`,
+	KeyLeftAlt:      `KeyLeftAlt`,
+	KeyLeftSuper:    `KeyLeftSuper`,
+	KeyRightShift:   `KeyRightShift`,
+	KeyRightControl: `KeyRightControl`,
+	KeyRightAlt:     `KeyRightAlt`,
+	KeyRightSuper:   `KeyRightSuper`,
+	KeyMenu:         `KeyMenu`,
+}
+
 type ModifierKey int
 
 const (
@@ -140,6 +266,13 @@ const (
 	ModSuper   ModifierKey = ModifierKey(glfw.ModSuper)
 )
 
+var ModifierKeyNames = map[ModifierKey]string{
+	ModShift:   `ModShift`,
+	ModControl: `ModControl`,
+	ModAlt:     `ModAlt`,
+	ModSuper:   `ModSuper`,
+}
+
 type Action int
 
 const (
@@ -148,12 +281,34 @@ const (
 	Repeat  Action = Action(glfw.Repeat)
 )
 
+var ActionNames = map[Action]string{
+	Release: `Release`,
+	Press:   `Press`,
+	Repeat:  `Repeat`,
+}
+
 type KeyEvent struct {
 	Window   *glfw.Window
 	Key      Key
 	Scancode int
 	Action   Action
 	Mods     ModifierKey
+}
+
+func (keyEvent *KeyEvent) String() string {
+	mods := make([]string, 0, len(ModifierKeyNames))
+	for k, v := range ModifierKeyNames {
+		if (keyEvent.Mods & k) != 0 {
+			mods = append(mods, v)
+		}
+	}
+
+	return fmt.Sprintf(
+		"KeyEvent: %s: <%s> <%s> %#x",
+		ActionNames[keyEvent.Action],
+		strings.Join(mods, "+"),
+		KeyNames[keyEvent.Key],
+		keyEvent.Scancode)
 }
 
 type KeyCallback func(event *KeyEvent)

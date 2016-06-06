@@ -73,11 +73,7 @@ func (video *Video) Destroy() {
 func (video *Video) SetMode(mode *VideoMode) {
 }
 
-func (video *Video) RenderBegin() {
-	video.glRenderer.RenderBegin()
-}
-
-func (video *Video) RenderEnd() {
-	video.glRenderer.RenderEnd()
+func (video *Video) Render() {
+	video.glRenderer.Render()
 	video.osWindow.Swap()
 }
