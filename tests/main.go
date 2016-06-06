@@ -16,9 +16,8 @@ func main() {
 
 	core.Log(core.LOG_NOTICE, "Booting...")
 	m.Boot()
-	for i := 0; i < 10; i++ {
-		m.Update()
-		m.Render()
+	for i := 0; i < 30; i++ {
+		m.Run()
 		time.Sleep(time.Second * 1)
 	}
 	m.Shutdown()

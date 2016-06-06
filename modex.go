@@ -7,8 +7,10 @@ import (
 )
 
 type Modex struct {
-	Running bool
-	Video   *gfx.Video
+	Running           bool
+	RebootRequested   bool
+	ShutdownRequested bool
+	Video             *gfx.Video
 }
 
 func NewModex() *Modex {
@@ -39,11 +41,22 @@ func (modex *Modex) Boot() {
 	modex.Running = true
 }
 
-func (modex *Modex) Shutdown() {
+func (modex *Modex) Run() {
+	modex.Update()
+	modex.Render()
+}
+
+func (modex *Modex) Pause() {
 	modex.Running = false
 }
 
+func (modex *Modex) Shutdown() {
+	modex.Running = false
+	// TODO: something
+}
+
 func (modex *Modex) Update() {
+	// initiate update cascade
 }
 
 func (modex *Modex) Render() {
