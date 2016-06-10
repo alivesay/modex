@@ -2,34 +2,40 @@ package gl
 
 import (
 	"encoding/json"
-
 	"github.com/alivesay/modex/core"
 	gl "github.com/go-gl/glow/gl"
+	"sync"
 )
 
 type Info struct {
 	MaxTextureImageUnits int32
 	MaxTextureSize       int32
 	MaxVertexAttribs     int32
+	MaxViewportDims      [2]int32
 	Vendor               string
 	Version              string
 	Renderer             string
 	Extensions           string
 }
 
-func NewInfo() *Info {
-	info := &Info{
-		Vendor:     gl.GoStr(gl.GetString(gl.VENDOR)),
-		Version:    gl.GoStr(gl.GetString(gl.VERSION)),
-		Renderer:   gl.GoStr(gl.GetString(gl.RENDERER)),
-		Extensions: gl.GoStr(gl.GetString(gl.EXTENSIONS)),
-	}
+var infoInstance *Info
+var infoOnce sync.Once
 
-	gl.GetIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS, &info.MaxTextureImageUnits)
-	gl.GetIntegerv(gl.MAX_TEXTURE_SIZE, &info.MaxTextureSize)
-	gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &info.MaxVertexAttribs)
+func GetInstanceInfo() *Info {
+	infoOnce.Do(func() {
+		infoInstance = &Info{
+			Vendor:     gl.GoStr(gl.GetString(gl.VENDOR)),
+			Version:    gl.GoStr(gl.GetString(gl.VERSION)),
+			Renderer:   gl.GoStr(gl.GetString(gl.RENDERER)),
+			Extensions: gl.GoStr(gl.GetString(gl.EXTENSIONS)),
+		}
 
-	return info
+		gl.GetIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS, &infoInstance.MaxTextureImageUnits)
+		gl.GetIntegerv(gl.MAX_TEXTURE_SIZE, &infoInstance.MaxTextureSize)
+		gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &infoInstance.MaxVertexAttribs)
+		gl.GetIntegerv(gl.MAX_VIEWPORT_DIMS, &infoInstance.MaxViewportDims[0])
+	})
+	return infoInstance
 }
 
 func (info *Info) String() string {

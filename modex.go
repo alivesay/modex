@@ -42,7 +42,8 @@ func (modex *Modex) Boot() {
 }
 
 func (modex *Modex) Run() {
-	for modex.app.ShutdownRequested {
+	core.Log(core.LOG_NOTICE, "Running...")
+	for modex.app.ShutdownRequested == false {
 		if modex.app.Running {
 			modex.update()
 			modex.render()

@@ -1,20 +1,12 @@
 package gl
 
-import (
-	"github.com/alivesay/modex/gfx/pixbuf"
-	gl "github.com/go-gl/glow/gl"
-)
-
 type Renderer struct {
-	BgColor *pixbuf.RGBA32
 	// rendertree
 }
 
 func NewRenderer() *Renderer {
-	return &Renderer{BgColor: &pixbuf.RGBA32{Packed: 0x3366CCFF}}
+	return &Renderer{}
 }
 
 func (r *Renderer) Render() {
-	gl.ClearColor(r.BgColor.Rn(), r.BgColor.Gn(), r.BgColor.Bn(), r.BgColor.An())
-	gl.Clear(gl.COLOR_BUFFER_BIT)
 }

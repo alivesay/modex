@@ -1,6 +1,7 @@
 package gfx
 
 import (
+	"github.com/alivesay/modex/core"
 	"github.com/alivesay/modex/gfx/gl"
 )
 
@@ -58,6 +59,12 @@ func NewVideo() (*Video, error) {
 		return nil, err
 	}
 
+	if err := osWindow.SetViewport2D(); err != nil {
+		return nil, err
+	}
+
+	osWindow.SetShader(glShader)
+
 	return &Video{
 		osWindow:   osWindow,
 		glState:    glState,
@@ -74,6 +81,11 @@ func (video *Video) SetMode(mode *VideoMode) {
 }
 
 func (video *Video) Render() {
-	video.glRenderer.Render()
-	video.osWindow.Swap()
+	//	video.glRenderer.Render()
+	video.osWindow.Update()
+	video.osWindow.Render()
+
+	if err := gl.GetGLError(); err != nil {
+		core.Log(core.LOG_ERR, err)
+	}
 }

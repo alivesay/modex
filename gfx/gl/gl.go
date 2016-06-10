@@ -5,6 +5,18 @@ import (
 	gl "github.com/go-gl/glow/gl"
 )
 
+type GLType int32
+
+const (
+	GLByte         GLType = gl.BYTE
+	GLUnsignedByte GLType = gl.UNSIGNED_BYTE
+	GLShort        GLType = gl.SHORT
+	GLInt          GLType = gl.INT
+	GLUnsignedInt  GLType = gl.UNSIGNED_INT
+	GLFloat        GLType = gl.FLOAT
+	GLFixed        GLType = gl.FIXED
+)
+
 type State struct {
 	GLInitialized bool
 	Info          *Info
@@ -20,7 +32,7 @@ func (state *State) Init() {
 		core.Log(core.LOG_PANIC, err)
 	}
 
-	state.Info = NewInfo()
+	state.Info = GetInstanceInfo()
 	core.Log(core.LOG_DEBUG, state.Info)
 
 	state.GLInitialized = true

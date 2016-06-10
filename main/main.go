@@ -1,13 +1,16 @@
-package modex
+package main
 
-import "runtime"
+import (
+	"github.com/alivesay/modex"
+	"runtime"
+)
 
 func init() {
 	runtime.LockOSThread()
 }
 
 func main() {
-	m := NewModex()
+	m := modex.NewModex()
 	m.Boot()
 	m.Run()
 	m.Shutdown()
