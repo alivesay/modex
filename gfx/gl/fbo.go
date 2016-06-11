@@ -1,7 +1,7 @@
 package gl
 
 import (
-	gl "github.com/go-gl/glow/gl"
+	gles2 "github.com/go-gl/gl/v3.1/gles2"
 )
 
 type fbo struct {
@@ -10,9 +10,9 @@ type fbo struct {
 
 func NewFBO() (*fbo, error) {
 	fbo := &fbo{}
-	gl.GenFramebuffers(1, &fbo.glFBOID)
+	gles2.GenFramebuffers(1, &fbo.glFBOID)
 
-	if !gl.IsFramebuffer(fbo.glFBOID) {
+	if !gles2.IsFramebuffer(fbo.glFBOID) {
 		return nil, GetGLError()
 	}
 
@@ -20,13 +20,13 @@ func NewFBO() (*fbo, error) {
 }
 
 func (fbo *fbo) Destroy() {
-	gl.DeleteFramebuffers(1, &fbo.glFBOID)
+	gles2.DeleteFramebuffers(1, &fbo.glFBOID)
 }
 
 func (fbo *fbo) Bind() {
-	gl.BindFramebuffer(gl.FRAMEBUFFER, fbo.glFBOID)
+	gles2.BindFramebuffer(gles2.FRAMEBUFFER, fbo.glFBOID)
 }
 
 func (fbo *fbo) Unbind() {
-	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+	gles2.BindFramebuffer(gles2.FRAMEBUFFER, 0)
 }

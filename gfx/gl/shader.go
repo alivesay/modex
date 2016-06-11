@@ -2,7 +2,7 @@ package gl
 
 import (
 	"fmt"
-	gl "github.com/go-gl/glow/gl"
+	gles2 "github.com/go-gl/gl/v3.1/gles2"
 	"github.com/go-gl/mathgl/mgl32"
 	"strings"
 )
@@ -26,25 +26,25 @@ type Shader struct {
 }
 
 func NewShader(vertexSource string, fragmentSource string) (*Shader, error) {
-	glVertexShader, err := compileShader(vertexSource, gl.VERTEX_SHADER)
+	glVertexShader, err := compileShader(vertexSource, gles2.VERTEX_SHADER)
 	if err != nil {
 		return nil, err
 	}
-	defer gl.DeleteShader(glVertexShader)
+	defer gles2.DeleteShader(glVertexShader)
 
-	glFragmentShader, err := compileShader(fragmentSource, gl.FRAGMENT_SHADER)
+	glFragmentShader, err := compileShader(fragmentSource, gles2.FRAGMENT_SHADER)
 	if err != nil {
 		return nil, err
 	}
-	defer gl.DeleteShader(glFragmentShader)
+	defer gles2.DeleteShader(glFragmentShader)
 
 	glProgramID, err := createProgramAndLink(glVertexShader, glFragmentShader)
 	if err != nil {
 		return nil, err
 	}
 
-	gl.DetachShader(glProgramID, glVertexShader)
-	gl.DetachShader(glProgramID, glFragmentShader)
+	gles2.DetachShader(glProgramID, glVertexShader)
+	gles2.DetachShader(glProgramID, glFragmentShader)
 
 	shader := &Shader{glProgramID: glProgramID}
 
@@ -56,27 +56,27 @@ func NewShader(vertexSource string, fragmentSource string) (*Shader, error) {
 
 func (shader *Shader) Destroy() {
 	if shader.glProgramID != 0 {
-		gl.DeleteProgram(shader.glProgramID)
+		gles2.DeleteProgram(shader.glProgramID)
 	}
 }
 
 func (shader *Shader) Use() {
-	gl.UseProgram(shader.glProgramID)
+	gles2.UseProgram(shader.glProgramID)
 }
 
 func (shader *Shader) Unuse() {
-	gl.UseProgram(0)
+	gles2.UseProgram(0)
 }
 
 func createProgramAndLink(glVertexShader uint32, glFragmentShader uint32) (uint32, error) {
-	glProgramID := gl.CreateProgram()
-	gl.AttachShader(glProgramID, glVertexShader)
-	gl.AttachShader(glProgramID, glFragmentShader)
-	gl.LinkProgram(glProgramID)
+	glProgramID := gles2.CreateProgram()
+	gles2.AttachShader(glProgramID, glVertexShader)
+	gles2.AttachShader(glProgramID, glFragmentShader)
+	gles2.LinkProgram(glProgramID)
 
 	var status int32
-	gl.GetProgramiv(glProgramID, gl.LINK_STATUS, &status)
-	if status == gl.FALSE {
+	gles2.GetProgramiv(glProgramID, gles2.LINK_STATUS, &status)
+	if status == gles2.FALSE {
 		programLog := getProgramLog(glProgramID)
 		return 0, fmt.Errorf("program linking failed: %v", programLog)
 	}
@@ -85,16 +85,16 @@ func createProgramAndLink(glVertexShader uint32, glFragmentShader uint32) (uint3
 }
 
 func compileShader(source string, shaderType uint32) (uint32, error) {
-	glShader := gl.CreateShader(shaderType)
+	glShader := gles2.CreateShader(shaderType)
 
-	csources, free := gl.Strs(source)
-	gl.ShaderSource(glShader, 1, csources, nil)
+	csources, free := gles2.Strs(source)
+	gles2.ShaderSource(glShader, 1, csources, nil)
 	free()
-	gl.CompileShader(glShader)
+	gles2.CompileShader(glShader)
 
 	var status int32
-	gl.GetShaderiv(glShader, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
+	gles2.GetShaderiv(glShader, gles2.COMPILE_STATUS, &status)
+	if status == gles2.FALSE {
 		shaderLog := getShaderLog(glShader)
 		return 0, fmt.Errorf("shader compilation failed: %v: %v", source, shaderLog)
 	}
@@ -104,25 +104,25 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 
 func getShaderLog(glShader uint32) string {
 	var logLen int32
-	gl.GetShaderiv(glShader, gl.INFO_LOG_LENGTH, &logLen)
+	gles2.GetShaderiv(glShader, gles2.INFO_LOG_LENGTH, &logLen)
 	shaderLog := strings.Repeat("\x00", int(logLen+1))
-	gl.GetShaderInfoLog(glShader, logLen, nil, gl.Str(shaderLog))
+	gles2.GetShaderInfoLog(glShader, logLen, nil, gles2.Str(shaderLog))
 
 	return shaderLog
 }
 
 func getProgramLog(glProgramID uint32) string {
 	var logLen int32
-	gl.GetProgramiv(glProgramID, gl.INFO_LOG_LENGTH, &logLen)
+	gles2.GetProgramiv(glProgramID, gles2.INFO_LOG_LENGTH, &logLen)
 	programLog := strings.Repeat("\x00", int(logLen+1))
-	gl.GetProgramInfoLog(glProgramID, logLen, nil, gl.Str(programLog))
+	gles2.GetProgramInfoLog(glProgramID, logLen, nil, gles2.Str(programLog))
 
 	return programLog
 }
 
 func (shader *Shader) updateUniforms() {
 	var uniformCount int32
-	gl.GetProgramiv(shader.glProgramID, gl.ACTIVE_UNIFORMS, &uniformCount)
+	gles2.GetProgramiv(shader.glProgramID, gles2.ACTIVE_UNIFORMS, &uniformCount)
 	uniforms := make(map[string]Uniform, uniformCount)
 
 	var buf [1024]uint8
@@ -131,9 +131,9 @@ func (shader *Shader) updateUniforms() {
 	var uniformType uint32
 	var i uint32
 	for i = 0; i < uint32(uniformCount); i++ {
-		gl.GetActiveUniform(shader.glProgramID, i, 1024, &bufLen, &uniformSize, &uniformType, &buf[0])
+		gles2.GetActiveUniform(shader.glProgramID, i, 1024, &bufLen, &uniformSize, &uniformType, &buf[0])
 		uniforms[string(buf[:bufLen])] = Uniform{
-			Location: gl.GetUniformLocation(shader.glProgramID, &buf[0]),
+			Location: gles2.GetUniformLocation(shader.glProgramID, &buf[0]),
 			Size:     uniformSize,
 			Type:     uniformType,
 		}
@@ -143,7 +143,7 @@ func (shader *Shader) updateUniforms() {
 
 func (shader *Shader) updateAttributes() {
 	var attribCount int32
-	gl.GetProgramiv(shader.glProgramID, gl.ACTIVE_ATTRIBUTES, &attribCount)
+	gles2.GetProgramiv(shader.glProgramID, gles2.ACTIVE_ATTRIBUTES, &attribCount)
 	attribs := make(map[string]Attribute, attribCount)
 
 	var buf [1024]uint8
@@ -152,9 +152,9 @@ func (shader *Shader) updateAttributes() {
 	var attribType uint32
 	var i uint32
 	for i = 0; i < uint32(attribCount); i++ {
-		gl.GetActiveAttrib(shader.glProgramID, i, 1024, &bufLen, &attribSize, &attribType, &buf[0])
+		gles2.GetActiveAttrib(shader.glProgramID, i, 1024, &bufLen, &attribSize, &attribType, &buf[0])
 		attribs[string(buf[:bufLen])] = Attribute{
-			Location: gl.GetAttribLocation(shader.glProgramID, &buf[0]),
+			Location: gles2.GetAttribLocation(shader.glProgramID, &buf[0]),
 			Size:     attribSize,
 			Type:     attribType,
 		}
@@ -164,7 +164,7 @@ func (shader *Shader) updateAttributes() {
 
 func (shader *Shader) SetUniformMatrix(name string, matrix *mgl32.Mat4) error {
 	if uniform, ok := shader.uniforms[name]; ok {
-		gl.UniformMatrix4fv(uniform.Location, 1, false, &matrix[0])
+		gles2.UniformMatrix4fv(uniform.Location, 1, false, &matrix[0])
 		return nil
 	}
 

@@ -7,6 +7,8 @@ import (
 	"runtime"
 )
 
+const profEnabled = false
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -14,9 +16,12 @@ func init() {
 func main() {
 	m := modex.NewModex()
 	m.Boot()
-	go func() {
-		http.ListenAndServe("localhost:6060", nil)
-	}()
+
+	if profEnabled {
+		go func() {
+			http.ListenAndServe("localhost:6060", nil)
+		}()
+	}
 	m.Run()
 	m.Shutdown()
 }

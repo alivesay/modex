@@ -1,0 +1,29 @@
+{
+	"ImportPath": "github.com/alivesay/modex",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/go-gl/gl/v3.1/gles2",
+			"Rev": "cd1cf4a9b229045e8a41d5945fc597617e8bae4f"
+		},
+		{
+			"ImportPath": "github.com/go-gl/glfw/v3.1/glfw",
+			"Rev": "e08e51ed34fa8be1bab154a41910d15c6e9202ac"
+		},
+		{
+			"ImportPath": "github.com/go-gl/mathgl/mgl32",
+			"Comment": "Go1.2.2-113-g4051097",
+			"Rev": "40510979b0b281f0fdb879958e0416f38f0f3504"
+		},
+		{
+			"ImportPath": "github.com/op/go-logging",
+			"Comment": "v1-7-g970db52",
+			"Rev": "970db520ece77730c7e4724c61121037378659d9"
+		},
+		{
+			"ImportPath": "golang.org/x/image/math/f32",
+			"Rev": "97680175a5267bb8b31f1923e7a66df98013b11a"
+		}
+	]
+}

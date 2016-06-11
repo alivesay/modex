@@ -3,7 +3,7 @@ package gl
 import (
 	"errors"
 	"github.com/alivesay/modex/gfx/pixbuf"
-	gl "github.com/go-gl/glow/gl"
+	gles2 "github.com/go-gl/gl/v3.1/gles2"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
@@ -18,7 +18,7 @@ type Viewport struct {
 func (viewport *Viewport) SetOrtho2D() error {
 	maxDims := GetInstanceInfo().MaxViewportDims
 	if viewport.W-viewport.X <= maxDims[0] && viewport.H-viewport.Y <= maxDims[1] {
-		gl.Viewport(viewport.X, viewport.Y, viewport.W, viewport.H)
+		gles2.Viewport(viewport.X, viewport.Y, viewport.W, viewport.H)
 		projMat := mgl32.Ortho2D(float32(viewport.X), float32(viewport.W), float32(viewport.H), float32(viewport.Y))
 		viewport.ProjMat = &projMat
 
@@ -29,6 +29,6 @@ func (viewport *Viewport) SetOrtho2D() error {
 }
 
 func (viewport *Viewport) Clear(color *pixbuf.RGBA32) {
-	gl.ClearColor(color.Rn(), color.Gn(), color.Bn(), color.An())
-	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gles2.ClearColor(color.Rn(), color.Gn(), color.Bn(), color.An())
+	gles2.Clear(gles2.COLOR_BUFFER_BIT | gles2.DEPTH_BUFFER_BIT)
 }

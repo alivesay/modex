@@ -3,7 +3,7 @@ package gl
 import (
 	"errors"
 	"github.com/alivesay/modex/core"
-	gl "github.com/go-gl/glow/gl"
+	gles2 "github.com/go-gl/gl/v3.1/gles2"
 )
 
 type VertexAttrib struct {
@@ -18,9 +18,9 @@ type VertexAttrib struct {
 type VBOUsage uint32
 
 const (
-	StaticDraw  VBOUsage = gl.STATIC_DRAW
-	DynamicDraw VBOUsage = gl.DYNAMIC_DRAW
-	StreamDraw  VBOUsage = gl.STREAM_DRAW
+	StaticDraw  VBOUsage = gles2.STATIC_DRAW
+	DynamicDraw VBOUsage = gles2.DYNAMIC_DRAW
+	StreamDraw  VBOUsage = gles2.STREAM_DRAW
 )
 
 const initialBufferCapacity = 256
@@ -52,7 +52,7 @@ func NewVBO(buffer []Vertex, attribs []VertexAttrib, vboUsage VBOUsage) (*VBO, e
 }
 
 func (vbo *VBO) Destroy() {
-	gl.DeleteBuffers(1, &vbo.glVBOID)
+	gles2.DeleteBuffers(1, &vbo.glVBOID)
 }
 
 func (vbo *VBO) Bind() {
@@ -63,19 +63,19 @@ func (vbo *VBO) Bind() {
 
 	bufSize := len(vbo.buffer) * VertexByteSize
 
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo.glVBOID)
+	gles2.BindBuffer(gles2.ARRAY_BUFFER, vbo.glVBOID)
 
 	if vbo.bufferUsage != StaticDraw {
-		gl.BufferData(gl.ARRAY_BUFFER, vbo.bufferCapacity, nil, uint32(vbo.bufferUsage))
+		gles2.BufferData(gles2.ARRAY_BUFFER, vbo.bufferCapacity, nil, uint32(vbo.bufferUsage))
 
 		if bufSize > 0 {
-			gl.BufferSubData(gl.ARRAY_BUFFER, 0, bufSize, gl.Ptr(vbo.buffer))
+			gles2.BufferSubData(gles2.ARRAY_BUFFER, 0, bufSize, gles2.Ptr(vbo.buffer))
 		}
 	}
 
 	for _, attrib := range vbo.attribs {
-		gl.EnableVertexAttribArray(attrib.Index)
-		gl.VertexAttribPointer(attrib.Index, attrib.Size, uint32(attrib.Type), attrib.Normalized, int32(attrib.Stride), gl.PtrOffset(attrib.Offset))
+		gles2.EnableVertexAttribArray(attrib.Index)
+		gles2.VertexAttribPointer(attrib.Index, attrib.Size, uint32(attrib.Type), attrib.Normalized, int32(attrib.Stride), gles2.PtrOffset(attrib.Offset))
 
 	}
 
@@ -89,9 +89,9 @@ func (vbo *VBO) Unbind() {
 	}
 
 	for _, attrib := range vbo.attribs {
-		gl.DisableVertexAttribArray(attrib.Index)
+		gles2.DisableVertexAttribArray(attrib.Index)
 	}
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gles2.BindBuffer(gles2.ARRAY_BUFFER, 0)
 	vbo.isBound = false
 }
 
@@ -101,7 +101,7 @@ func (vbo *VBO) Render() {
 		return
 	}
 
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(vbo.buffer)))
+	gles2.DrawArrays(gles2.TRIANGLES, 0, int32(len(vbo.buffer)))
 	LogGLErrors()
 }
 
@@ -135,9 +135,9 @@ func (vbo *VBO) UpdateAttribs(attribs []VertexAttrib) error {
 func (vbo *VBO) createVBO() error {
 	var id uint32
 
-	gl.GenBuffers(1, &id)
-	gl.BindBuffer(gl.ARRAY_BUFFER, id)
-	if gl.IsBuffer(id) == false {
+	gles2.GenBuffers(1, &id)
+	gles2.BindBuffer(gles2.ARRAY_BUFFER, id)
+	if gles2.IsBuffer(id) == false {
 		return errors.New("failed to generate VBO buffer")
 	}
 
@@ -146,16 +146,16 @@ func (vbo *VBO) createVBO() error {
 
 	switch vbo.bufferUsage {
 	case StaticDraw:
-		gl.BufferData(gl.ARRAY_BUFFER, bufSize, gl.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
+		gles2.BufferData(gles2.ARRAY_BUFFER, bufSize, gles2.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
 		break
 	default:
-		gl.BufferData(gl.ARRAY_BUFFER, bufCap, nil, uint32(vbo.bufferUsage))
+		gles2.BufferData(gles2.ARRAY_BUFFER, bufCap, nil, uint32(vbo.bufferUsage))
 	}
 
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gles2.BindBuffer(gles2.ARRAY_BUFFER, 0)
 
 	if err := GetGLError(); err != nil {
-		gl.DeleteBuffers(1, &id)
+		gles2.DeleteBuffers(1, &id)
 		return err
 	}
 
@@ -168,8 +168,8 @@ func (vbo *VBO) createVBO() error {
 }
 
 func (vbo *VBO) maybeDeleteVBO() {
-	if gl.IsBuffer(vbo.glVBOID) {
-		gl.DeleteBuffers(1, &vbo.glVBOID)
+	if gles2.IsBuffer(vbo.glVBOID) {
+		gles2.DeleteBuffers(1, &vbo.glVBOID)
 	}
 
 	vbo.glVBOID = 0
