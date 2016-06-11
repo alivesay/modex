@@ -8,13 +8,14 @@ import (
 type GLType int32
 
 const (
-	GLByte         GLType = gl.BYTE
-	GLUnsignedByte GLType = gl.UNSIGNED_BYTE
-	GLShort        GLType = gl.SHORT
-	GLInt          GLType = gl.INT
-	GLUnsignedInt  GLType = gl.UNSIGNED_INT
-	GLFloat        GLType = gl.FLOAT
-	GLFixed        GLType = gl.FIXED
+	GLByte          GLType = gl.BYTE
+	GLUnsignedByte  GLType = gl.UNSIGNED_BYTE
+	GLShort         GLType = gl.SHORT
+	GLInt           GLType = gl.INT
+	GLUnsignedShort GLType = gl.UNSIGNED_SHORT
+	GLUnsignedInt   GLType = gl.UNSIGNED_INT
+	GLFloat         GLType = gl.FLOAT
+	GLFixed         GLType = gl.FIXED
 )
 
 type State struct {

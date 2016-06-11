@@ -19,8 +19,8 @@ type Video struct {
 }
 
 const initialTitle string = "modex"
-const initialWidth uint16 = 320
-const initialHeight uint16 = 240
+const initialWidth uint16 = 640
+const initialHeight uint16 = 480
 
 const defaultVertexShaderGLSL string = `
 #version 100

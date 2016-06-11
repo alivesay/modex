@@ -6,6 +6,7 @@ import (
 	"github.com/alivesay/modex/gfx/gl"
 	"github.com/alivesay/modex/gfx/pixbuf"
 	"github.com/go-gl/glfw/v3.1/glfw"
+	"math/rand"
 )
 
 type OSWindow struct {
@@ -37,12 +38,14 @@ func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
 		BgColor:          &pixbuf.RGBA32{Packed: 0x3366CCFF},
 	}
 
+	glfwWindow.SetFramebufferSizeCallback(window.framebufferResizeCallback)
 	glfwWindow.SetKeyCallback(window.keyCallback)
 
 	return window, nil
 }
 
 func (window *OSWindow) Destroy() {
+	window.mesh.Destroy()
 	window.glfwWindow.Destroy()
 }
 
@@ -66,6 +69,8 @@ func (window *OSWindow) Update() {
 	if window.glfwWindow.ShouldClose() {
 		core.GetInstanceApplication().ShutdownRequested = true
 	}
+
+	window.DrawRandomTriangles()
 }
 
 func (window *OSWindow) Render() {
@@ -102,6 +107,10 @@ func (window *OSWindow) keyCallback(glfwWindow *glfw.Window, key glfw.Key, scanc
 	}
 }
 
+func (window *OSWindow) framebufferResizeCallback(glfwWindow *glfw.Window, width, height int) {
+	window.SetViewport2D()
+}
+
 func DefaultKeyCallback(keyEvent *events.KeyEvent) {
 	core.Log(core.LogDebug, keyEvent)
 }
@@ -117,8 +126,18 @@ func (window *OSWindow) SetupTestMesh() {
 	if err != nil {
 		panic(err)
 	}
+}
 
-	window.mesh.AddVertex(gl.Vertex{160.0, 0.0, 0.0})
-	window.mesh.AddVertex(gl.Vertex{320.0, 240.0, 0.0})
-	window.mesh.AddVertex(gl.Vertex{0.0, 240.0, 0.0})
+func (window *OSWindow) DrawRandomTriangles() {
+	window.mesh.ClearBuffer()
+
+	for i := 0; i < 15000; i++ {
+		x := rand.Float32() * float32(window.viewport.W)
+		y := rand.Float32() * float32(window.viewport.H)
+		window.mesh.AddVertex(gl.Vertex{x, y, 0.0})
+		window.mesh.AddVertex(gl.Vertex{x + 10, y + 10, 0.0})
+		window.mesh.AddVertex(gl.Vertex{x - 10, y + 10, 0.0})
+	}
+
+	window.mesh.SyncBuffer()
 }

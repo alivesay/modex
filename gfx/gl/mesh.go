@@ -2,11 +2,12 @@ package gl
 
 import (
 	"errors"
+	"github.com/alivesay/modex/core"
 )
 
 // TODO: best initial value?
-const initialVertexCount uint32 = 64
-const maxVertexCount uint32 = 65536
+const initialVertexCount int = 64
+const maxVertexCount int = 65536
 
 type Mesh struct {
 	Data    []Vertex
@@ -49,7 +50,17 @@ func (mesh *Mesh) AddVertexAttrib(attrib VertexAttrib) error {
 }
 
 func (mesh *Mesh) AddVertex(vertex Vertex) {
-	// TODO: check max vertexes
+	if len(mesh.Data) >= maxVertexCount {
+		core.Log(core.LogErr, "maxVertexCount exceeded")
+		return
+	}
 	mesh.Data = append(mesh.Data, vertex)
+}
+
+func (mesh *Mesh) SyncBuffer() {
 	mesh.VBO.UpdateBuffer(mesh.Data)
+}
+
+func (mesh *Mesh) ClearBuffer() {
+	mesh.Data = mesh.Data[:0]
 }
