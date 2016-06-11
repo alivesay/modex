@@ -14,23 +14,17 @@ type Mesh struct {
 	attribs []VertexAttrib
 }
 
-func NewMesh(size uint32) (*Mesh, error) {
+func NewMesh() (*Mesh, error) {
 	var data []Vertex = make([]Vertex, 0, maxVertexCount)
 
-	data = append(data, Vertex{160.0, 0.0, 0.0})
-	data = append(data, Vertex{320.0, 240.0, 0.0})
-	data = append(data, Vertex{0.0, 240, 0.0})
-
+	// TODO: handle shape specific attribs
 	mesh := &Mesh{
-		Data: data,
-		attribs: []VertexAttrib{
-			{0, 3, GLFloat, false, 0, 0},
-			//			{1, 4, GLFloat, false, 32, 4},
-		},
+		Data:    data,
+		attribs: make([]VertexAttrib, 0, int(GetInstanceInfo().MaxVertexAttribs)),
 	}
 
 	var err error
-	mesh.VBO, err = NewVBO(uint32(len(mesh.Data)), mesh.Data, mesh.attribs, DynamicDraw)
+	mesh.VBO, err = NewVBO(mesh.Data, mesh.attribs, DynamicDraw)
 	if err != nil {
 		return nil, err
 	}
@@ -38,14 +32,24 @@ func NewMesh(size uint32) (*Mesh, error) {
 	return mesh, nil
 }
 
-func (mesh *Mesh) addVertexAttrib(attrib VertexAttrib) error {
+func (mesh *Mesh) Destroy() {
+	mesh.VBO.Destroy()
+}
+
+func (mesh *Mesh) AddVertexAttrib(attrib VertexAttrib) error {
 	if len(mesh.attribs) < int(GetInstanceInfo().MaxVertexAttribs) {
 		mesh.attribs = append(mesh.attribs, attrib)
+		if err := mesh.VBO.UpdateAttribs(mesh.attribs); err != nil {
+			return err
+		}
 		return nil
 	}
 
 	return errors.New("GL_MAX_VERTEX_ATTRIBS exceeded")
 }
 
-func Destroy() {
+func (mesh *Mesh) AddVertex(vertex Vertex) {
+	// TODO: check max vertexes
+	mesh.Data = append(mesh.Data, vertex)
+	mesh.VBO.UpdateBuffer(mesh.Data)
 }

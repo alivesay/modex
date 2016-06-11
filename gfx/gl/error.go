@@ -19,7 +19,11 @@ var GLErrorStrings = map[uint32]string{
 func GetGLError() error {
 	errStrings := make([]string, 0)
 	for glError := gl.GetError(); glError != gl.NO_ERROR; glError = gl.GetError() {
-		errStrings = append(errStrings, GLErrorStrings[glError])
+		if errString, ok := GLErrorStrings[glError]; ok {
+			errStrings = append(errStrings, errString)
+		} else {
+			errStrings = append(errStrings, "UnhandledGLError")
+		}
 	}
 
 	if len(errStrings) > 0 {

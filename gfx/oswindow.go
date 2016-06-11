@@ -108,8 +108,17 @@ func DefaultKeyCallback(keyEvent *events.KeyEvent) {
 
 func (window *OSWindow) SetupTestMesh() {
 	var err error
-	window.mesh, err = gl.NewMesh(0)
+	window.mesh, err = gl.NewMesh()
 	if err != nil {
 		panic(err)
 	}
+
+	err = window.mesh.AddVertexAttrib(gl.VertexAttrib{0, 3, gl.GLFloat, false, 0, 0})
+	if err != nil {
+		panic(err)
+	}
+
+	window.mesh.AddVertex(gl.Vertex{160.0, 0.0, 0.0})
+	window.mesh.AddVertex(gl.Vertex{320.0, 240.0, 0.0})
+	window.mesh.AddVertex(gl.Vertex{0.0, 240.0, 0.0})
 }
