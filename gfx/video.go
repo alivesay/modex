@@ -1,7 +1,6 @@
 package gfx
 
 import (
-	"github.com/alivesay/modex/core"
 	"github.com/alivesay/modex/gfx/gl"
 )
 
@@ -27,9 +26,9 @@ const defaultVertexShaderGLSL string = `
 #version 100
 precision highp float;
 uniform mat4 uProjectionMatrix;
-attribute vec2 Position;
+attribute vec3 Position;
 void main() {
-	gl_Position = uProjectionMatrix * vec4(Position, 0.0, 1.0);
+	gl_Position = uProjectionMatrix * vec4(Position, 1.0);
 }` + "\x00"
 
 const defaultFragmentShaderGLSL string = `
@@ -65,6 +64,9 @@ func NewVideo() (*Video, error) {
 
 	osWindow.SetShader(glShader)
 
+	// TODO
+	osWindow.SetupTestMesh()
+
 	return &Video{
 		osWindow:   osWindow,
 		glState:    glState,
@@ -85,7 +87,5 @@ func (video *Video) Render() {
 	video.osWindow.Update()
 	video.osWindow.Render()
 
-	if err := gl.GetGLError(); err != nil {
-		core.Log(core.LOG_ERR, err)
-	}
+	gl.LogGLErrors()
 }

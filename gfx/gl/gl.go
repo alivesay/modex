@@ -24,16 +24,16 @@ type State struct {
 
 func (state *State) Init() {
 	if state.GLInitialized {
-		core.Log(core.LOG_ERR, "GL already initialized")
+		core.Log(core.LogErr, "GL already initialized")
 		return
 	}
 
 	if err := gl.Init(); err != nil {
-		core.Log(core.LOG_PANIC, err)
+		core.Log(core.LogPanic, err)
 	}
 
 	state.Info = GetInstanceInfo()
-	core.Log(core.LOG_DEBUG, state.Info)
+	core.Log(core.LogDebug, state.Info)
 
 	state.GLInitialized = true
 }

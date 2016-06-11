@@ -41,7 +41,7 @@ func GetInstanceInfo() *Info {
 func (info *Info) String() string {
 	out, err := json.Marshal(info)
 	if err != nil {
-		core.Log(core.LOG_ERR, err)
+		core.Log(core.LogErr, err)
 		return ""
 	}
 

@@ -6,16 +6,15 @@ import (
 	"github.com/alivesay/modex/gfx/gl"
 	"github.com/alivesay/modex/gfx/pixbuf"
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"github.com/go-gl/mathgl/mgl32"
 )
 
 type OSWindow struct {
 	glfwWindow       *glfw.Window
 	keyEventCallback events.KeyCallback
 	viewport         *gl.Viewport
-	ProjMat          mgl32.Mat4
 	shader           *gl.Shader
 	BgColor          *pixbuf.RGBA32
+	mesh             *gl.Mesh
 }
 
 func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
@@ -49,7 +48,7 @@ func (window *OSWindow) Destroy() {
 
 func (window *OSWindow) SetViewport2D() error {
 	vw, vh := window.glfwWindow.GetFramebufferSize()
-	window.viewport = &gl.Viewport{0, 0, int32(vw), int32(vh), &window.ProjMat}
+	window.viewport = &gl.Viewport{0, 0, int32(vw), int32(vh), nil}
 
 	if err := window.viewport.SetOrtho2D(); err != nil {
 		return err
@@ -64,16 +63,23 @@ func (window *OSWindow) SetShader(shader *gl.Shader) {
 
 func (window *OSWindow) Update() {
 	events.Poll()
+	if window.glfwWindow.ShouldClose() {
+		core.GetInstanceApplication().ShutdownRequested = true
+	}
 }
 
 func (window *OSWindow) Render() {
 	window.viewport.Clear(window.BgColor)
 	// this shader will go in an overlay or target fbo
+	window.mesh.VBO.Bind()
 	if window.shader != nil {
 		window.shader.Use()
+		window.shader.SetUniformMatrix("uProjectionMatrix", window.viewport.ProjMat)
 	}
-
+	window.mesh.VBO.Render()
 	window.swap()
+
+	window.mesh.VBO.Unbind()
 
 	if window.shader != nil {
 		window.shader.Unuse()
@@ -82,9 +88,6 @@ func (window *OSWindow) Render() {
 
 func (window *OSWindow) swap() {
 	window.glfwWindow.SwapBuffers()
-	if window.glfwWindow.ShouldClose() {
-		core.GetInstanceApplication().ShutdownRequested = true
-	}
 }
 
 func (window *OSWindow) keyCallback(glfwWindow *glfw.Window, key glfw.Key, scancode int, action glfw.Action, modifierKey glfw.ModifierKey) {
@@ -100,5 +103,13 @@ func (window *OSWindow) keyCallback(glfwWindow *glfw.Window, key glfw.Key, scanc
 }
 
 func DefaultKeyCallback(keyEvent *events.KeyEvent) {
-	core.Log(core.LOG_DEBUG, keyEvent)
+	core.Log(core.LogDebug, keyEvent)
+}
+
+func (window *OSWindow) SetupTestMesh() {
+	var err error
+	window.mesh, err = gl.NewMesh(0)
+	if err != nil {
+		panic(err)
+	}
 }

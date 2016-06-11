@@ -9,14 +9,14 @@ import (
 type LogErrorLevel uint8
 
 const (
-	LOG_FATAL = iota
-	LOG_PANIC
-	LOG_CRIT
-	LOG_ERR
-	LOG_WARNING
-	LOG_NOTICE
-	LOG_INFO
-	LOG_DEBUG
+	LogFatal = iota
+	LogPanic
+	LogCrit
+	LogErr
+	LogWarn
+	LogNotice
+	LogInfo
+	LogDebug
 )
 
 type log struct {
@@ -39,6 +39,7 @@ func getInstanceLog() *log {
 			backend: logging.NewLogBackend(os.Stderr, prefix, 0),
 		}
 
+		logInstance.logger.ExtraCalldepth = 1
 		logging.SetLevel(logging.DEBUG, prefix)
 		logging.SetBackend(logInstance.backend)
 		logging.SetFormatter(logInstance.formatter)
@@ -49,16 +50,16 @@ func getInstanceLog() *log {
 func Log(level LogErrorLevel, args ...interface{}) {
 	log := getInstanceLog()
 	switch level {
-	case LOG_PANIC:
+	case LogPanic:
 		log.logger.Panic(args)
 		break
-	case LOG_ERR:
+	case LogErr:
 		log.logger.Error(args)
 		break
-	case LOG_NOTICE:
+	case LogNotice:
 		log.logger.Notice(args)
 		break
-	case LOG_DEBUG:
+	case LogDebug:
 		log.logger.Debug(args)
 		break
 	}

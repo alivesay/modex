@@ -1,6 +1,8 @@
 package gl
 
-import "errors"
+import (
+	"errors"
+)
 
 // TODO: best initial value?
 const initialVertexCount uint32 = 64
@@ -12,24 +14,28 @@ type Mesh struct {
 	attribs []VertexAttrib
 }
 
-func NewMesh(size uint32) *Mesh {
-	var data []Vertex = make([]Vertex, initialVertexCount, maxVertexCount)
+func NewMesh(size uint32) (*Mesh, error) {
+	var data []Vertex = make([]Vertex, 0, maxVertexCount)
 
-	data = append(data, Vertex{[3]float32{160.0, 10.0, 0.0}, [4]float32{0.0, 0.0, 0.0, 0.0}})
-	data = append(data, Vertex{[3]float32{310.0, 230.0, 0.0}, [4]float32{0.0, 0.0, 0.0, 0.0}})
-	data = append(data, Vertex{[3]float32{10.0, 230.0, 0.0}, [4]float32{0.0, 0.0, 0.0, 0.0}})
+	data = append(data, Vertex{160.0, 0.0, 0.0})
+	data = append(data, Vertex{320.0, 240.0, 0.0})
+	data = append(data, Vertex{0.0, 240, 0.0})
 
 	mesh := &Mesh{
 		Data: data,
 		attribs: []VertexAttrib{
-			{0, 3, GLFloat, false, 3, 0},
-			{1, 4, GLFloat, false, 4, 3},
+			{0, 3, GLFloat, false, 0, 0},
+			//			{1, 4, GLFloat, false, 32, 4},
 		},
 	}
 
-	mesh.VBO = NewVBO(uint32(len(mesh.Data)), mesh.Data, mesh.attribs, DynamicDraw)
+	var err error
+	mesh.VBO, err = NewVBO(uint32(len(mesh.Data)), mesh.Data, mesh.attribs, DynamicDraw)
+	if err != nil {
+		return nil, err
+	}
 
-	return mesh
+	return mesh, nil
 }
 
 func (mesh *Mesh) addVertexAttrib(attrib VertexAttrib) error {

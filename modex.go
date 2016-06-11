@@ -15,14 +15,12 @@ func NewModex() *Modex {
 	modex := &Modex{}
 
 	if err := glfw.Init(); err != nil {
-		core.Log(core.LOG_PANIC, err)
+		core.Log(core.LogPanic, err)
 	}
 
 	video, err := gfx.NewVideo()
-
 	if err != nil {
-		core.Log(core.LOG_PANIC, err)
-		return nil
+		core.Log(core.LogPanic, err)
 	}
 
 	modex.app = core.GetInstanceApplication()
@@ -38,11 +36,11 @@ func (modex *Modex) Destroy() {
 
 func (modex *Modex) Boot() {
 	modex.app.Running = true
-	core.Log(core.LOG_NOTICE, "Booting...")
+	core.Log(core.LogNotice, "Booting...")
 }
 
 func (modex *Modex) Run() {
-	core.Log(core.LOG_NOTICE, "Running...")
+	core.Log(core.LogNotice, "Running...")
 	for modex.app.ShutdownRequested == false {
 		if modex.app.Running {
 			modex.update()
@@ -57,7 +55,7 @@ func (modex *Modex) Pause() {
 
 func (modex *Modex) Shutdown() {
 	modex.app.Running = false
-	core.Log(core.LOG_NOTICE, "Shutting down...")
+	core.Log(core.LogNotice, "Shutting down...")
 }
 
 func (modex *Modex) update() {
