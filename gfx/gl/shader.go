@@ -2,9 +2,10 @@ package gl
 
 import (
 	"fmt"
+	"strings"
+
 	gles2 "github.com/go-gl/gl/v3.1/gles2"
 	"github.com/go-gl/mathgl/mgl32"
-	"strings"
 )
 
 type Uniform struct {

@@ -2,12 +2,9 @@ package gl
 
 import (
 	"errors"
+
 	"github.com/alivesay/modex/core"
 )
-
-// TODO: best initial value?
-const initialVertexCount int = 64
-const maxVertexCount int = 65536
 
 type Mesh struct {
 	Data    []Vertex
@@ -15,8 +12,8 @@ type Mesh struct {
 	attribs []VertexAttrib
 }
 
-func NewMesh() (*Mesh, error) {
-	var data []Vertex = make([]Vertex, 0, maxVertexCount)
+func NewMesh(usage VBOUsage, initialCapacity int) (*Mesh, error) {
+	var data []Vertex = make([]Vertex, 0, initialCapacity)
 
 	// TODO: handle shape specific attribs
 	mesh := &Mesh{
@@ -25,7 +22,7 @@ func NewMesh() (*Mesh, error) {
 	}
 
 	var err error
-	mesh.VBO, err = NewVBO(mesh.Data, mesh.attribs, DynamicDraw)
+	mesh.VBO, err = NewVBO(mesh.Data, mesh.attribs, usage)
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +47,12 @@ func (mesh *Mesh) AddVertexAttrib(attrib VertexAttrib) error {
 }
 
 func (mesh *Mesh) AddVertex(vertex Vertex) {
-	if len(mesh.Data) >= maxVertexCount {
-		core.Log(core.LogErr, "maxVertexCount exceeded")
-		return
+	dataLen := len(mesh.Data)
+	capLen := cap(mesh.Data)
+	if dataLen == capLen {
+		newData := make([]Vertex, dataLen, core.NP2(uint32(capLen+1)))
+		copy(newData, mesh.Data)
+		mesh.Data = newData
 	}
 	mesh.Data = append(mesh.Data, vertex)
 }

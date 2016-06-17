@@ -1,12 +1,13 @@
 package gfx
 
 import (
+	"math/rand"
+
 	"github.com/alivesay/modex/core"
 	"github.com/alivesay/modex/events"
 	"github.com/alivesay/modex/gfx/gl"
-	"github.com/alivesay/modex/gfx/pixbuf"
 	"github.com/go-gl/glfw/v3.1/glfw"
-	"math/rand"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type OSWindow struct {
@@ -14,8 +15,8 @@ type OSWindow struct {
 	keyEventCallback events.KeyCallback
 	viewport         *gl.Viewport
 	shader           *gl.Shader
-	BgColor          *pixbuf.RGBA32
 	mesh             *gl.Mesh
+	fps              *FPS
 }
 
 func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
@@ -31,11 +32,13 @@ func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
 	}
 
 	glfwWindow.MakeContextCurrent()
+	// TODO
+	glfw.SwapInterval(0)
 
 	window := &OSWindow{
 		glfwWindow:       glfwWindow,
 		keyEventCallback: DefaultKeyCallback,
-		BgColor:          &pixbuf.RGBA32{Packed: 0x3366CCFF},
+		fps:              NewFPS(),
 	}
 
 	glfwWindow.SetFramebufferSizeCallback(window.framebufferResizeCallback)
@@ -49,9 +52,21 @@ func (window *OSWindow) Destroy() {
 	window.glfwWindow.Destroy()
 }
 
+func (window *OSWindow) SetViewportPerspective() error {
+	vw, vh := window.glfwWindow.GetFramebufferSize()
+	window.viewport = gl.NewViewport(0, 0, int32(vw), int32(vh))
+
+	if err := window.viewport.SetPerspective(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: should be abstracted to something like Use2DMode()
 func (window *OSWindow) SetViewport2D() error {
 	vw, vh := window.glfwWindow.GetFramebufferSize()
-	window.viewport = &gl.Viewport{0, 0, int32(vw), int32(vh), nil}
+	window.viewport = gl.NewViewport(0, 0, int32(vw), int32(vh))
 
 	if err := window.viewport.SetOrtho2D(); err != nil {
 		return err
@@ -69,16 +84,25 @@ func (window *OSWindow) Update() {
 	if window.glfwWindow.ShouldClose() {
 		core.GetInstanceApplication().ShutdownRequested = true
 	}
-
 	window.DrawRandomTriangles()
 }
 
 func (window *OSWindow) Render() {
-	window.viewport.Clear(window.BgColor)
 	// this shader will go in an overlay or target fbo
+	window.viewport.Render()
+
 	window.mesh.VBO.Bind()
 	if window.shader != nil {
 		window.shader.Use()
+		//viewMat := mgl32.LookAt(60, 40, -10, 100, 0, 50, 0, 1, 0)
+		//		viewMat := mgl32.LookAt(0, 30, 260, 200, 0, 0, 0, 1, 0)
+		//viewMat := mgl32.LookAt(0, 20, 10, 0, 0, 0, 0, 1, 0)
+		viewMat := mgl32.Ident4()
+		modelMat := mgl32.Ident4()
+		// TODO:
+		// these should be set automatically
+		window.shader.SetUniformMatrix("uModelMatrix", &modelMat)
+		window.shader.SetUniformMatrix("uViewMatrix", &viewMat)
 		window.shader.SetUniformMatrix("uProjectionMatrix", window.viewport.ProjMat)
 	}
 	window.mesh.VBO.Render()
@@ -89,6 +113,8 @@ func (window *OSWindow) Render() {
 	if window.shader != nil {
 		window.shader.Unuse()
 	}
+
+	window.fps.Update(window.glfwWindow)
 }
 
 func (window *OSWindow) swap() {
@@ -117,7 +143,7 @@ func DefaultKeyCallback(keyEvent *events.KeyEvent) {
 
 func (window *OSWindow) SetupTestMesh() {
 	var err error
-	window.mesh, err = gl.NewMesh()
+	window.mesh, err = gl.NewMesh(gl.StaticDraw, 2048)
 	if err != nil {
 		panic(err)
 	}
@@ -131,7 +157,7 @@ func (window *OSWindow) SetupTestMesh() {
 func (window *OSWindow) DrawRandomTriangles() {
 	window.mesh.ClearBuffer()
 
-	for i := 0; i < 15000; i++ {
+	for i := 0; i < 10000; i++ {
 		x := rand.Float32() * float32(window.viewport.W)
 		y := rand.Float32() * float32(window.viewport.H)
 		window.mesh.AddVertex(gl.Vertex{x, y, 0.0})

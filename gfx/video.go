@@ -25,10 +25,12 @@ const initialHeight uint16 = 480
 const defaultVertexShaderGLSL string = `
 #version 100
 precision highp float;
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 attribute vec3 Position;
 void main() {
-	gl_Position = uProjectionMatrix * vec4(Position, 1.0);
+	gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(Position, 1.0);
 }` + "\x00"
 
 const defaultFragmentShaderGLSL string = `
@@ -37,9 +39,9 @@ precision highp float;
 vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
 void main() {
 	if (mod(gl_FragCoord.y, 2.0f) < 1.0) {
-		gl_FragColor = color;
+		gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
 	} else {
-		gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 	}
 }` + "\x00"
 

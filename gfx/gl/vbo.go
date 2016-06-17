@@ -2,6 +2,7 @@ package gl
 
 import (
 	"errors"
+
 	"github.com/alivesay/modex/core"
 	gles2 "github.com/go-gl/gl/v3.1/gles2"
 )
@@ -22,8 +23,6 @@ const (
 	DynamicDraw VBOUsage = gles2.DYNAMIC_DRAW
 	StreamDraw  VBOUsage = gles2.STREAM_DRAW
 )
-
-const initialBufferCapacity = 256
 
 type VBO struct {
 	glVBOID        uint32
@@ -146,7 +145,9 @@ func (vbo *VBO) createVBO() error {
 
 	switch vbo.bufferUsage {
 	case StaticDraw:
-		gles2.BufferData(gles2.ARRAY_BUFFER, bufSize, gles2.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
+		if bufSize > 0 {
+			gles2.BufferData(gles2.ARRAY_BUFFER, bufSize, gles2.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
+		}
 		break
 	default:
 		gles2.BufferData(gles2.ARRAY_BUFFER, bufCap, nil, uint32(vbo.bufferUsage))
