@@ -2,58 +2,56 @@ package gl
 
 import (
 	"errors"
+
+	"github.com/alivesay/modex/gfx/gui"
 	"github.com/alivesay/modex/gfx/pixbuf"
-	gles2 "github.com/go-gl/gl/v3.1/gles2"
+	gogl "github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// A Viewport manages OpenGL viewports within the scene.
 type Viewport struct {
-	X           int32
-	Y           int32
-	W           int32
-	H           int32
 	ProjMat     *mgl32.Mat4
-	BgColor     *pixbuf.RGBA32
 	RenderState *RenderState
+	BgColor     *pixbuf.RGBA32
+	gui.Rectangle
 	Renderable
 }
 
-func NewViewport(x, y, w, h int32) *Viewport {
+// NewViewport constructs a new managed Viewport.
+func NewViewport(x, y, width, height int32) *Viewport {
 	viewport := &Viewport{
-		X:           x,
-		Y:           y,
-		W:           w,
-		H:           h,
 		ProjMat:     &mgl32.Mat4{},
 		BgColor:     &pixbuf.RGBA32{Packed: 0x3366CCFF},
 		RenderState: NewRenderState(),
+		Rectangle:   gui.NewRectangle(x, y, width, height),
 	}
 
-	viewport.RenderState.AddCapability(gles2.CULL_FACE)
+	viewport.RenderState.AddCapability(gogl.CULL_FACE)
+	viewport.RenderState.AddCapability(gogl.BLEND)
 
 	return viewport
 }
 
-func (viewport *Viewport) Destroy() {
-}
-
+// SetPerspective establishes a default projection matrix.
 func (viewport *Viewport) SetPerspective() error {
-	if viewport.W <= 0 || viewport.H <= 0 {
+	if viewport.Width() <= 0 || viewport.Height() <= 0 {
 		return errors.New("viewport dimensions must be positive values")
 	}
 
-	gles2.Viewport(viewport.X, viewport.Y, viewport.W, viewport.H)
-	projMat := mgl32.Perspective(mgl32.DegToRad(60.0), float32(viewport.W)/float32(viewport.H), 0.1, 2000.0)
+	gogl.Viewport(viewport.X(), viewport.Y(), viewport.Width(), viewport.Height())
+	projMat := mgl32.Perspective(mgl32.DegToRad(60.0), float32(viewport.Width())/float32(viewport.Height()), 0.1, 2000.0)
 	viewport.ProjMat = &projMat
 
 	return nil
 }
 
+// SetOrtho2D establishes an orthographic projection matrix.
 func (viewport *Viewport) SetOrtho2D() error {
 	maxDims := GetInstanceInfo().MaxViewportDims
-	if viewport.W-viewport.X <= maxDims[0] && viewport.H-viewport.Y <= maxDims[1] {
-		gles2.Viewport(viewport.X, viewport.Y, viewport.W, viewport.H)
-		projMat := mgl32.Ortho2D(float32(viewport.X), float32(viewport.W), float32(viewport.H), float32(viewport.Y))
+	if viewport.Width()-viewport.X() <= maxDims[0] && viewport.Height()-viewport.Y() <= maxDims[1] {
+		gogl.Viewport(viewport.X(), viewport.Y(), viewport.Width(), viewport.Height())
+		projMat := mgl32.Ortho2D(float32(viewport.X()), float32(viewport.Width()), float32(viewport.Height()), float32(viewport.Y()))
 		viewport.ProjMat = &projMat
 
 		return nil
@@ -62,18 +60,25 @@ func (viewport *Viewport) SetOrtho2D() error {
 	return errors.New("GL_MAX_VIEWPORT_DIMS exceeded")
 }
 
-func (viewport *Viewport) Clear() {
-	gles2.ClearColor(viewport.BgColor.Rn(), viewport.BgColor.Gn(), viewport.BgColor.Bn(), viewport.BgColor.An())
-	gles2.Clear(gles2.COLOR_BUFFER_BIT | gles2.DEPTH_BUFFER_BIT)
-}
+// TODO:
 
+// Render needs to move somewhere else.
 func (viewport *Viewport) Render() {
-	//	gles2.Enable(gles2.CULL_FACE)
-	//	gles2.Enable(gles2.DEPTH_TEST)
-	gles2.Enable(gles2.BLEND)
-	gles2.BlendFunc(gles2.SRC_ALPHA, gles2.ONE_MINUS_SRC_ALPHA)
+	gogl.Enable(gogl.CULL_FACE)
+	//	gogl.Enable(gogl.DEPTH_TEST)
+	gogl.Enable(gogl.BLEND)
+	gogl.BlendFunc(gogl.SRC_ALPHA, gogl.ONE_MINUS_SRC_ALPHA)
+	gogl.CullFace(gogl.BACK)
 	viewport.Clear()
 	// Render members
-	//	gles2.Disable(gles2.DEPTH_TEST)
-	//	gles2.Disable(gles2.CULL_FACE)
+	//	gogl.Disable(gogl.DEPTH_TEST)
+	//	gogl.Disable(gogl.CULL_FACE)
+}
+
+// TODO:
+
+// Viewport clears the screen.. should it clear just the viewport? or move elsewhere.
+func (viewport *Viewport) Clear() {
+	gogl.ClearColor(viewport.BgColor.Rn(), viewport.BgColor.Gn(), viewport.BgColor.Bn(), viewport.BgColor.An())
+	gogl.Clear(gogl.COLOR_BUFFER_BIT | gogl.DEPTH_BUFFER_BIT)
 }

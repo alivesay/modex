@@ -148,7 +148,15 @@ func (window *OSWindow) SetupTestMesh() {
 		panic(err)
 	}
 
-	err = window.mesh.AddVertexAttrib(gl.VertexAttrib{0, 3, gl.GLFloat, false, 0, 0})
+	err = window.mesh.AddVertexAttrib(gl.VertexAttrib{
+		Index:      0,
+		Size:       3,
+		Type:       gl.GLFloat,
+		Normalized: false,
+		Stride:     0,
+		Offset:     0,
+	})
+
 	if err != nil {
 		panic(err)
 	}
@@ -158,11 +166,11 @@ func (window *OSWindow) DrawRandomTriangles() {
 	window.mesh.ClearBuffer()
 
 	for i := 0; i < 10000; i++ {
-		x := rand.Float32() * float32(window.viewport.W)
-		y := rand.Float32() * float32(window.viewport.H)
-		window.mesh.AddVertex(gl.Vertex{x, y, 0.0})
-		window.mesh.AddVertex(gl.Vertex{x + 10, y + 10, 0.0})
+		x := rand.Float32() * float32(window.viewport.Width())
+		y := rand.Float32() * float32(window.viewport.Height())
 		window.mesh.AddVertex(gl.Vertex{x - 10, y + 10, 0.0})
+		window.mesh.AddVertex(gl.Vertex{x + 10, y + 10, 0.0})
+		window.mesh.AddVertex(gl.Vertex{x, y, 0.0})
 	}
 
 	window.mesh.SyncBuffer()

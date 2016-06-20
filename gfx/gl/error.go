@@ -2,23 +2,24 @@ package gl
 
 import (
 	"errors"
-	"github.com/alivesay/modex/core"
-	gles2 "github.com/go-gl/gl/v3.1/gles2"
 	"strings"
+
+	"github.com/alivesay/modex/core"
+	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
 var GLErrorStrings = map[uint32]string{
-	gles2.NO_ERROR:                      `GL_NO_ERROR`,
-	gles2.INVALID_ENUM:                  `GL_INVALID_ENUM`,
-	gles2.INVALID_OPERATION:             `GL_INVALID_OPERATION`,
-	gles2.INVALID_VALUE:                 `GL_INVALID_VALUE`,
-	gles2.INVALID_FRAMEBUFFER_OPERATION: `GL_INVALID_FRAMEBUFFER_OPERATION`,
-	gles2.OUT_OF_MEMORY:                 `GL_OUT_OF_MEMORY`,
+	gogl.NO_ERROR:                      `GL_NO_ERROR`,
+	gogl.INVALID_ENUM:                  `GL_INVALID_ENUM`,
+	gogl.INVALID_OPERATION:             `GL_INVALID_OPERATION`,
+	gogl.INVALID_VALUE:                 `GL_INVALID_VALUE`,
+	gogl.INVALID_FRAMEBUFFER_OPERATION: `GL_INVALID_FRAMEBUFFER_OPERATION`,
+	gogl.OUT_OF_MEMORY:                 `GL_OUT_OF_MEMORY`,
 }
 
 func GetGLError() error {
 	errStrings := make([]string, 0)
-	for glError := gles2.GetError(); glError != gles2.NO_ERROR; glError = gles2.GetError() {
+	for glError := gogl.GetError(); glError != gogl.NO_ERROR; glError = gogl.GetError() {
 		if errString, ok := GLErrorStrings[glError]; ok {
 			errStrings = append(errStrings, errString)
 		} else {

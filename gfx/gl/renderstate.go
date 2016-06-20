@@ -1,7 +1,7 @@
 package gl
 
 import (
-	gles2 "github.com/go-gl/gl/v3.1/gles2"
+	gogl "github.com/go-gl/gl/all-core/gl"
 	"sort"
 )
 
@@ -41,12 +41,12 @@ func (state *RenderState) Enable() {
 	// bind VBO
 
 	for cap := range state.Capabilities {
-		gles2.Enable(uint32(cap))
+		gogl.Enable(uint32(cap))
 	}
 }
 
 func (state *RenderState) Disable() {
 	for cap := range state.Capabilities {
-		gles2.Disable(uint32(cap))
+		gogl.Disable(uint32(cap))
 	}
 }

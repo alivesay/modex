@@ -4,7 +4,7 @@
 	"GodepVersion": "v74",
 	"Deps": [
 		{
-			"ImportPath": "github.com/go-gl/gl/v3.1/gles2",
+			"ImportPath": "github.com/go-gl/gl/all-core/gl",
 			"Rev": "cd1cf4a9b229045e8a41d5945fc597617e8bae4f"
 		},
 		{

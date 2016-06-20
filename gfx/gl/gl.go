@@ -2,20 +2,20 @@ package gl
 
 import (
 	"github.com/alivesay/modex/core"
-	gles2 "github.com/go-gl/gl/v3.1/gles2"
+	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
 type GLType int32
 
 const (
-	GLByte          GLType = gles2.BYTE
-	GLUnsignedByte  GLType = gles2.UNSIGNED_BYTE
-	GLShort         GLType = gles2.SHORT
-	GLInt           GLType = gles2.INT
-	GLUnsignedShort GLType = gles2.UNSIGNED_SHORT
-	GLUnsignedInt   GLType = gles2.UNSIGNED_INT
-	GLFloat         GLType = gles2.FLOAT
-	GLFixed         GLType = gles2.FIXED
+	GLByte          GLType = gogl.BYTE
+	GLUnsignedByte  GLType = gogl.UNSIGNED_BYTE
+	GLShort         GLType = gogl.SHORT
+	GLInt           GLType = gogl.INT
+	GLUnsignedShort GLType = gogl.UNSIGNED_SHORT
+	GLUnsignedInt   GLType = gogl.UNSIGNED_INT
+	GLFloat         GLType = gogl.FLOAT
+	GLFixed         GLType = gogl.FIXED
 )
 
 type State struct {
@@ -29,7 +29,7 @@ func (state *State) Init() {
 		return
 	}
 
-	if err := gles2.Init(); err != nil {
+	if err := gogl.Init(); err != nil {
 		core.Log(core.LogPanic, err)
 	}
 
