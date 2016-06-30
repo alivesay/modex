@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/alivesay/modex/core"
+
 	gogl "github.com/go-gl/gl/all-core/gl"
 )
 

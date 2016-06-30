@@ -20,6 +20,8 @@ func NewFPS() *FPS {
 	return fps
 }
 
+// TODO:
+
 func (fps *FPS) Update(window *glfw.Window) {
 	currentTime := glfw.GetTime()
 	fps.nbFrames++

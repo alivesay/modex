@@ -4,26 +4,33 @@ import (
 	"errors"
 
 	"github.com/alivesay/modex/core"
+
 	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
+// TODO: should i not use GLType here?
+
+// VertexAttrib holds values matching GLVertexAttribPointer params.
 type VertexAttrib struct {
 	Index      uint32
 	Size       int32
 	Type       GLType
 	Normalized bool
-	Stride     uint32
+	Stride     int32
 	Offset     int
 }
 
+// VBOUsage represents OpenGL VBO usage types.
 type VBOUsage uint32
 
+// VBOUsage constants.
 const (
 	StaticDraw  VBOUsage = gogl.STATIC_DRAW
-	DynamicDraw VBOUsage = gogl.DYNAMIC_DRAW
-	StreamDraw  VBOUsage = gogl.STREAM_DRAW
+	DynamicDraw          = gogl.DYNAMIC_DRAW
+	StreamDraw           = gogl.STREAM_DRAW
 )
 
+// VBO maintains state for a managed OpenGL Vertex Buffer Object.
 type VBO struct {
 	glVBOID        uint32
 	bufferUsage    VBOUsage
@@ -31,16 +38,19 @@ type VBO struct {
 	bufferAttribs  []VertexAttrib
 	// TODO: support vbo doublebuffering
 	//currentBuffer uint32
-	buffer  []Vertex
-	attribs []VertexAttrib
-	isBound bool
+	buffer        []Vertex
+	primitiveType GLPrimitiveType
+	attribs       []VertexAttrib
+	isBound       bool
 }
 
-func NewVBO(buffer []Vertex, attribs []VertexAttrib, vboUsage VBOUsage) (*VBO, error) {
+// NewVBO creates a new managed VBO object.
+func NewVBO(buffer []Vertex, primitiveType GLPrimitiveType, attribs []VertexAttrib, vboUsage VBOUsage) (*VBO, error) {
 	vbo := &VBO{
-		bufferUsage: vboUsage,
-		attribs:     attribs,
-		buffer:      buffer,
+		bufferUsage:   vboUsage,
+		primitiveType: primitiveType,
+		attribs:       attribs,
+		buffer:        buffer,
 	}
 
 	if err := vbo.createVBO(); err != nil {
@@ -50,10 +60,12 @@ func NewVBO(buffer []Vertex, attribs []VertexAttrib, vboUsage VBOUsage) (*VBO, e
 	return vbo, nil
 }
 
+// Destroy implements a VBO destructor.
 func (vbo *VBO) Destroy() {
 	gogl.DeleteBuffers(1, &vbo.glVBOID)
 }
 
+// Bind the VBO for use and enable registered VertexAttribs.
 func (vbo *VBO) Bind() {
 	if vbo.isBound {
 		core.Log(core.LogErr, "VBO is already bound")
@@ -74,13 +86,13 @@ func (vbo *VBO) Bind() {
 
 	for _, attrib := range vbo.attribs {
 		gogl.EnableVertexAttribArray(attrib.Index)
-		gogl.VertexAttribPointer(attrib.Index, attrib.Size, uint32(attrib.Type), attrib.Normalized, int32(attrib.Stride), gogl.PtrOffset(attrib.Offset))
-
+		gogl.VertexAttribPointer(attrib.Index, attrib.Size, uint32(attrib.Type), attrib.Normalized, attrib.Stride, gogl.PtrOffset(attrib.Offset))
 	}
 
 	vbo.isBound = true
 }
 
+// Unbind the VBO.
 func (vbo *VBO) Unbind() {
 	if vbo.isBound == false {
 		core.Log(core.LogErr, "VBO already unbound")
@@ -94,16 +106,18 @@ func (vbo *VBO) Unbind() {
 	vbo.isBound = false
 }
 
+// Render the VBO using GLDrawArrays.
 func (vbo *VBO) Render() {
 	if vbo.isBound == false {
 		core.Log(core.LogErr, "cannot render unbound VBO")
 		return
 	}
 
-	gogl.DrawArrays(gogl.TRIANGLES, 0, int32(len(vbo.buffer)))
+	gogl.DrawArrays(uint32(vbo.primitiveType), 0, int32(len(vbo.buffer)))
 	LogGLErrors()
 }
 
+// UpdateBuffer sets the data source for buffer operations.
 func (vbo *VBO) UpdateBuffer(buffer []Vertex) error {
 	if vbo.isBound {
 		return errors.New("cannot update buffer on bound VBO")
@@ -121,7 +135,8 @@ func (vbo *VBO) UpdateBuffer(buffer []Vertex) error {
 	return nil
 }
 
-func (vbo *VBO) UpdateAttribs(attribs []VertexAttrib) error {
+// SetAttribs updates the VertexAttribs used by the VBO.
+func (vbo *VBO) SetAttribs(attribs []VertexAttrib) error {
 	if vbo.isBound {
 		return errors.New("cannot update attributes on bound VBO")
 	}
@@ -141,15 +156,11 @@ func (vbo *VBO) createVBO() error {
 	}
 
 	bufSize := len(vbo.buffer) * VertexByteSize
-	bufCap := int(core.NP2(uint32(bufSize) + 1))
+	bufCap := int(core.NP2(uint(bufSize) + 1))
 
-	switch vbo.bufferUsage {
-	case StaticDraw:
-		if bufSize > 0 {
-			gogl.BufferData(gogl.ARRAY_BUFFER, bufSize, gogl.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
-		}
-		break
-	default:
+	if vbo.bufferUsage == StaticDraw && bufSize > 0 {
+		gogl.BufferData(gogl.ARRAY_BUFFER, bufSize, gogl.Ptr(vbo.buffer), uint32(vbo.bufferUsage))
+	} else {
 		gogl.BufferData(gogl.ARRAY_BUFFER, bufCap, nil, uint32(vbo.bufferUsage))
 	}
 

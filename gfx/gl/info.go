@@ -2,9 +2,11 @@ package gl
 
 import (
 	"encoding/json"
-	"github.com/alivesay/modex/core"
-	gogl "github.com/go-gl/gl/all-core/gl"
 	"sync"
+
+	"github.com/alivesay/modex/core"
+
+	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
 type Info struct {

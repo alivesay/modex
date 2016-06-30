@@ -171,3 +171,12 @@ func (shader *Shader) SetUniformMatrix(name string, matrix *mgl32.Mat4) error {
 
 	return fmt.Errorf("invalid uniform variable: %s", name)
 }
+
+func (shader *Shader) SetUniformi(name string, val uint32) error {
+	if uniform, ok := shader.uniforms[name]; ok {
+		gogl.Uniform1i(uniform.Location, int32(val))
+		return nil
+	}
+
+	return fmt.Errorf("invalid uniform variable: %s", name)
+}

@@ -4,12 +4,14 @@ import (
 	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
+// TODO: make public export
 type fbo struct {
 	glFBOID uint32
 }
 
 func NewFBO() (*fbo, error) {
 	fbo := &fbo{}
+
 	gogl.GenFramebuffers(1, &fbo.glFBOID)
 
 	if !gogl.IsFramebuffer(fbo.glFBOID) {

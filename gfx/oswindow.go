@@ -1,29 +1,37 @@
 package gfx
 
 import (
+	"image"
+	_ "image/draw"
+	_ "image/png"
 	"math/rand"
+	"os"
 
 	"github.com/alivesay/modex/core"
 	"github.com/alivesay/modex/events"
 	"github.com/alivesay/modex/gfx/gl"
+
 	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+// OSWindow manages the creation of new OpenGL client windows.
 type OSWindow struct {
 	glfwWindow       *glfw.Window
 	keyEventCallback events.KeyCallback
 	viewport         *gl.Viewport
 	shader           *gl.Shader
 	mesh             *gl.Mesh
+	texture          *gl.Texture
 	fps              *FPS
 }
 
+// NewOSWindow creates a new OSWindow.
 func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
 	glfw.WindowHint(glfw.ClientAPI, glfw.OpenGLESAPI)
 	glfw.WindowHint(glfw.ContextVersionMajor, 2)
 	glfw.WindowHint(glfw.ContextVersionMinor, 0)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	//glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.DoubleBuffer, glfw.True)
 
 	glfwWindow, err := glfw.CreateWindow(int(w), int(h), title, nil, nil)
@@ -37,7 +45,7 @@ func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
 
 	window := &OSWindow{
 		glfwWindow:       glfwWindow,
-		keyEventCallback: DefaultKeyCallback,
+		keyEventCallback: defaultKeyCallback,
 		fps:              NewFPS(),
 	}
 
@@ -47,14 +55,19 @@ func NewOSWindow(title string, w uint16, h uint16) (*OSWindow, error) {
 	return window, nil
 }
 
+// Destroy implements an OSWindow destructor.
 func (window *OSWindow) Destroy() {
 	window.mesh.Destroy()
 	window.glfwWindow.Destroy()
 }
 
+// TODO: should be abstracted to something like Use2DMode()
+
+// SetViewportPerspective maximizes the OSWindow's viewport and sets up
+// a default perspective projection matrix.
 func (window *OSWindow) SetViewportPerspective() error {
 	vw, vh := window.glfwWindow.GetFramebufferSize()
-	window.viewport = gl.NewViewport(0, 0, int32(vw), int32(vh))
+	window.viewport = gl.NewViewport(0, 0, vw, vh)
 
 	if err := window.viewport.SetPerspective(); err != nil {
 		return err
@@ -63,22 +76,26 @@ func (window *OSWindow) SetViewportPerspective() error {
 	return nil
 }
 
-// TODO: should be abstracted to something like Use2DMode()
+// SetViewport2D maximizes the OSWindow's viewport and sets up
+// a default orthographic projection matrix.
 func (window *OSWindow) SetViewport2D() error {
+
 	vw, vh := window.glfwWindow.GetFramebufferSize()
-	window.viewport = gl.NewViewport(0, 0, int32(vw), int32(vh))
+	window.viewport = gl.NewViewport(0, 0, vw, vh)
 
 	if err := window.viewport.SetOrtho2D(); err != nil {
 		return err
 	}
-
+	window.LoadTexture()
 	return nil
 }
 
+// SetShader sets the root Shader to use for the window's rendering.
 func (window *OSWindow) SetShader(shader *gl.Shader) {
 	window.shader = shader
 }
 
+// Update initiates and propogates the application update phase.
 func (window *OSWindow) Update() {
 	events.Poll()
 	if window.glfwWindow.ShouldClose() {
@@ -87,27 +104,33 @@ func (window *OSWindow) Update() {
 	window.DrawRandomTriangles()
 }
 
+// Render initiates and propogates the application render phase.
 func (window *OSWindow) Render() {
 	// this shader will go in an overlay or target fbo
 	window.viewport.Render()
 
+	// TODO: why bind via mesh?
 	window.mesh.VBO.Bind()
+	window.texture.Bind()
 	if window.shader != nil {
 		window.shader.Use()
-		//viewMat := mgl32.LookAt(60, 40, -10, 100, 0, 50, 0, 1, 0)
-		//		viewMat := mgl32.LookAt(0, 30, 260, 200, 0, 0, 0, 1, 0)
-		//viewMat := mgl32.LookAt(0, 20, 10, 0, 0, 0, 0, 1, 0)
+		//viewMat := mgl32.LookAt(60, 40, -32, 320, 0, 50, 0, 1, 0)
+		//		viewMat := mgl32.LookAt(0, 32, 260, 200, 0, 0, 0, 1, 0)
+		//viewMat := mgl32.LookAt(0, 20, 32, 0, 0, 0, 0, 1, 0)
 		viewMat := mgl32.Ident4()
 		modelMat := mgl32.Ident4()
+
 		// TODO:
 		// these should be set automatically
 		window.shader.SetUniformMatrix("uModelMatrix", &modelMat)
 		window.shader.SetUniformMatrix("uViewMatrix", &viewMat)
 		window.shader.SetUniformMatrix("uProjectionMatrix", window.viewport.ProjMat)
+		window.shader.SetUniformi("texture1", 0)
 	}
+
 	window.mesh.VBO.Render()
 	window.swap()
-
+	window.texture.Unbind()
 	window.mesh.VBO.Unbind()
 
 	if window.shader != nil {
@@ -137,26 +160,42 @@ func (window *OSWindow) framebufferResizeCallback(glfwWindow *glfw.Window, width
 	window.SetViewport2D()
 }
 
-func DefaultKeyCallback(keyEvent *events.KeyEvent) {
+// TODO:
+
+func defaultKeyCallback(keyEvent *events.KeyEvent) {
 	core.Log(core.LogDebug, keyEvent)
 }
 
-func (window *OSWindow) SetupTestMesh() {
-	var err error
-	window.mesh, err = gl.NewMesh(gl.StaticDraw, 2048)
+func (window *OSWindow) LoadTexture() {
+	infile, err := os.Open("helm.png")
+	if err != nil {
+		panic(err)
+	}
+	defer infile.Close()
+
+	src, _, err := image.Decode(infile)
 	if err != nil {
 		panic(err)
 	}
 
-	err = window.mesh.AddVertexAttrib(gl.VertexAttrib{
-		Index:      0,
-		Size:       3,
-		Type:       gl.GLFloat,
-		Normalized: false,
-		Stride:     0,
-		Offset:     0,
-	})
+	texParams := []gl.TextureParameter{
+		gl.TextureParameter{Name: gl.TextureMinFilter, Value: gl.Nearest},
+		gl.TextureParameter{Name: gl.TextureMagFilter, Value: gl.Nearest},
+		gl.TextureParameter{Name: gl.TextureWrapS, Value: gl.ClampToEdge},
+		gl.TextureParameter{Name: gl.TextureWrapT, Value: gl.ClampToEdge},
+	}
+	window.texture, err = gl.NewTextureFromImage(src, gl.Texture2D, texParams)
+	// TODO: replace these with something like:
+	// texture.SetMinFilter(), tex.GenerateMipMap()
+	if err != nil {
+		panic(err)
+	}
+}
 
+func (window *OSWindow) SetupTestMesh() {
+	var err error
+
+	window.mesh, err = gl.NewMesh(gl.GLTriangles, gl.DynamicDraw, 2048)
 	if err != nil {
 		panic(err)
 	}
@@ -165,12 +204,17 @@ func (window *OSWindow) SetupTestMesh() {
 func (window *OSWindow) DrawRandomTriangles() {
 	window.mesh.ClearBuffer()
 
-	for i := 0; i < 10000; i++ {
-		x := rand.Float32() * float32(window.viewport.Width())
-		y := rand.Float32() * float32(window.viewport.Height())
-		window.mesh.AddVertex(gl.Vertex{x - 10, y + 10, 0.0})
-		window.mesh.AddVertex(gl.Vertex{x + 10, y + 10, 0.0})
-		window.mesh.AddVertex(gl.Vertex{x, y, 0.0})
+	for i := 0; i < 1000; i++ {
+		x := rand.Float32() * float32(window.viewport.Rect.Dx())
+		y := rand.Float32() * float32(window.viewport.Rect.Dy())
+
+		window.mesh.AddVertex(gl.Vertex{x, y + 32, 0.0, 0.0, 1.0})      // bottom left
+		window.mesh.AddVertex(gl.Vertex{x + 32, y + 32, 0.0, 1.0, 1.0}) // bottom right
+		window.mesh.AddVertex(gl.Vertex{x, y, 0.0, 0.0, 0.0})           // top left
+
+		window.mesh.AddVertex(gl.Vertex{x + 32, y, 0.0, 1.0, 0.0})      // top right
+		window.mesh.AddVertex(gl.Vertex{x, y, 0.0, 0.0, 0.0})           // top left
+		window.mesh.AddVertex(gl.Vertex{x + 32, y + 32, 0.0, 1.0, 1.0}) // bottom right
 	}
 
 	window.mesh.SyncBuffer()

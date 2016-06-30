@@ -1,15 +1,16 @@
 package core
 
 import (
-	"github.com/op/go-logging"
 	"os"
 	"sync"
+
+	"github.com/op/go-logging"
 )
 
 type LogErrorLevel uint8
 
 const (
-	LogFatal = iota
+	LogFatal LogErrorLevel = iota
 	LogPanic
 	LogCrit
 	LogErr
@@ -52,15 +53,11 @@ func Log(level LogErrorLevel, args ...interface{}) {
 	switch level {
 	case LogPanic:
 		log.logger.Panic(args)
-		break
 	case LogErr:
 		log.logger.Error(args)
-		break
 	case LogNotice:
 		log.logger.Notice(args)
-		break
 	case LogDebug:
 		log.logger.Debug(args)
-		break
 	}
 }

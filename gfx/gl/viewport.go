@@ -1,10 +1,13 @@
 package gl
 
+// TODO: use prim.Dimensions instead of rect here.
+
 import (
 	"errors"
+	"image"
 
-	"github.com/alivesay/modex/gfx/gui"
 	"github.com/alivesay/modex/gfx/pixbuf"
+
 	gogl "github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 )
@@ -14,45 +17,45 @@ type Viewport struct {
 	ProjMat     *mgl32.Mat4
 	RenderState *RenderState
 	BgColor     *pixbuf.RGBA32
-	gui.Rectangle
+	Rect        image.Rectangle
 	Renderable
 }
 
 // NewViewport constructs a new managed Viewport.
-func NewViewport(x, y, width, height int32) *Viewport {
-	viewport := &Viewport{
+func NewViewport(x, y, width, height int) *Viewport {
+	v := &Viewport{
 		ProjMat:     &mgl32.Mat4{},
 		BgColor:     &pixbuf.RGBA32{Packed: 0x3366CCFF},
 		RenderState: NewRenderState(),
-		Rectangle:   gui.NewRectangle(x, y, width, height),
+		Rect:        image.Rect(x, y, width, height),
 	}
 
-	viewport.RenderState.AddCapability(gogl.CULL_FACE)
-	viewport.RenderState.AddCapability(gogl.BLEND)
+	v.RenderState.AddCapability(gogl.CULL_FACE)
+	v.RenderState.AddCapability(gogl.BLEND)
 
-	return viewport
+	return v
 }
 
 // SetPerspective establishes a default projection matrix.
-func (viewport *Viewport) SetPerspective() error {
-	if viewport.Width() <= 0 || viewport.Height() <= 0 {
+func (v *Viewport) SetPerspective() error {
+	if v.Rect.Dx() <= 0 || v.Rect.Dy() <= 0 {
 		return errors.New("viewport dimensions must be positive values")
 	}
 
-	gogl.Viewport(viewport.X(), viewport.Y(), viewport.Width(), viewport.Height())
-	projMat := mgl32.Perspective(mgl32.DegToRad(60.0), float32(viewport.Width())/float32(viewport.Height()), 0.1, 2000.0)
-	viewport.ProjMat = &projMat
+	gogl.Viewport(int32(v.Rect.Min.X), int32(v.Rect.Min.Y), int32(v.Rect.Max.X), int32(v.Rect.Max.Y))
+	projMat := mgl32.Perspective(mgl32.DegToRad(60.0), float32(v.Rect.Dx())/float32(v.Rect.Dy()), 0.1, 2000.0)
+	v.ProjMat = &projMat
 
 	return nil
 }
 
 // SetOrtho2D establishes an orthographic projection matrix.
-func (viewport *Viewport) SetOrtho2D() error {
+func (v *Viewport) SetOrtho2D() error {
 	maxDims := GetInstanceInfo().MaxViewportDims
-	if viewport.Width()-viewport.X() <= maxDims[0] && viewport.Height()-viewport.Y() <= maxDims[1] {
-		gogl.Viewport(viewport.X(), viewport.Y(), viewport.Width(), viewport.Height())
-		projMat := mgl32.Ortho2D(float32(viewport.X()), float32(viewport.Width()), float32(viewport.Height()), float32(viewport.Y()))
-		viewport.ProjMat = &projMat
+	if v.Rect.Dx() <= int(maxDims[0]) && v.Rect.Dy() <= int(maxDims[1]) {
+		gogl.Viewport(int32(v.Rect.Min.X), int32(v.Rect.Min.Y), int32(v.Rect.Max.X), int32(v.Rect.Max.Y))
+		projMat := mgl32.Ortho2D(float32(v.Rect.Min.X), float32(v.Rect.Max.X), float32(v.Rect.Max.Y), float32(v.Rect.Min.Y))
+		v.ProjMat = &projMat
 
 		return nil
 	}
@@ -63,13 +66,13 @@ func (viewport *Viewport) SetOrtho2D() error {
 // TODO:
 
 // Render needs to move somewhere else.
-func (viewport *Viewport) Render() {
+func (v *Viewport) Render() {
 	gogl.Enable(gogl.CULL_FACE)
 	//	gogl.Enable(gogl.DEPTH_TEST)
-	gogl.Enable(gogl.BLEND)
 	gogl.BlendFunc(gogl.SRC_ALPHA, gogl.ONE_MINUS_SRC_ALPHA)
+	gogl.Enable(gogl.BLEND)
 	gogl.CullFace(gogl.BACK)
-	viewport.Clear()
+	v.Clear()
 	// Render members
 	//	gogl.Disable(gogl.DEPTH_TEST)
 	//	gogl.Disable(gogl.CULL_FACE)
@@ -78,7 +81,7 @@ func (viewport *Viewport) Render() {
 // TODO:
 
 // Viewport clears the screen.. should it clear just the viewport? or move elsewhere.
-func (viewport *Viewport) Clear() {
-	gogl.ClearColor(viewport.BgColor.Rn(), viewport.BgColor.Gn(), viewport.BgColor.Bn(), viewport.BgColor.An())
+func (v *Viewport) Clear() {
+	gogl.ClearColor(v.BgColor.Rn(), v.BgColor.Gn(), v.BgColor.Bn(), v.BgColor.An())
 	gogl.Clear(gogl.COLOR_BUFFER_BIT | gogl.DEPTH_BUFFER_BIT)
 }

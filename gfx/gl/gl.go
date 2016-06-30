@@ -5,17 +5,31 @@ import (
 	gogl "github.com/go-gl/gl/all-core/gl"
 )
 
-type GLType int32
+type GLType uint32
 
 const (
 	GLByte          GLType = gogl.BYTE
-	GLUnsignedByte  GLType = gogl.UNSIGNED_BYTE
-	GLShort         GLType = gogl.SHORT
-	GLInt           GLType = gogl.INT
-	GLUnsignedShort GLType = gogl.UNSIGNED_SHORT
-	GLUnsignedInt   GLType = gogl.UNSIGNED_INT
-	GLFloat         GLType = gogl.FLOAT
-	GLFixed         GLType = gogl.FIXED
+	GLUnsignedByte         = gogl.UNSIGNED_BYTE
+	GLShort                = gogl.SHORT
+	GLInt                  = gogl.INT
+	GLUnsignedShort        = gogl.UNSIGNED_SHORT
+	GLUnsignedInt          = gogl.UNSIGNED_INT
+	GLFloat                = gogl.FLOAT
+	GLFixed                = gogl.FIXED
+)
+
+// GLPrimitiveType represents OpenGL primitive types
+type GLPrimitiveType int32
+
+// Wrappers for supported Opengl primitive types.
+const (
+	GLPoints        GLPrimitiveType = gogl.POINTS
+	GLLines                         = gogl.LINES
+	GLLineStrip                     = gogl.LINE_STRIP
+	GLLineLoop                      = gogl.LINE_LOOP
+	GLTriangles                     = gogl.TRIANGLES
+	GLTriangleStrip                 = gogl.TRIANGLE_STRIP
+	GLTriangleFan                   = gogl.TRIANGLE_FAN
 )
 
 type State struct {

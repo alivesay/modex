@@ -24,25 +24,33 @@ const initialHeight uint16 = 480
 
 const defaultVertexShaderGLSL string = `
 #version 100
+#ifdef GL_ES
 precision highp float;
+#endif
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 attribute vec3 Position;
+attribute vec2 TexCoords;
+varying mediump vec2 vTexCoords;
 void main() {
 	gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(Position, 1.0);
+	vTexCoords = TexCoords;
 }` + "\x00"
 
 const defaultFragmentShaderGLSL string = `
 #version 100
+#ifdef GL_ES
 precision highp float;
+#endif
 vec4 color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform sampler2D texture1;
+varying mediump vec2 vTexCoords;
 void main() {
-	if (mod(gl_FragCoord.y, 2.0f) < 1.0) {
-		gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
-	} else {
-		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-	}
+	gl_FragColor = texture2D(texture1, vTexCoords);
+	//if (mod(gl_FragCoord.y, 2.0f) < 1.0) {
+	//	gl_FragColor.a = 0.5;
+	//}
 }` + "\x00"
 
 func NewVideo() (*Video, error) {
